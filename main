@@ -1,0 +1,245 @@
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local rootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Biến hệ thống
+local currentMode = 2
+local Tween = false
+local worldValue = 0  
+local eggsValue = 0   
+local worldVariable = "World"..worldValue
+local eggsVariable = "Egg"..eggsValue
+
+-- Tạo UI nâng cao
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AdvancedCombatSystemUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player.PlayerGui
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0, 20)
+mainFrame.BackgroundTransparency = 0.8
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+mainFrame.Parent = screenGui
+
+-- Phần AutoFarm
+local autoFarmLabel = Instance.new("TextLabel")
+autoFarmLabel.Size = UDim2.new(0.9, 0, 0, 25)
+autoFarmLabel.Position = UDim2.new(0.05, 0, 0.05, 0)
+autoFarmLabel.Text = "AUTO FARM SYSTEM"
+autoFarmLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+autoFarmLabel.BackgroundTransparency = 1
+autoFarmLabel.Font = Enum.Font.GothamBold
+autoFarmLabel.Parent = mainFrame
+
+local modeButton = Instance.new("TextButton")
+modeButton.Size = UDim2.new(0.9, 0, 0, 35)
+modeButton.Position = UDim2.new(0.05, 0, 0.2, 0)
+modeButton.Text = "AutoFarm : On"
+modeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+modeButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+modeButton.Parent = mainFrame
+
+-- Phần World
+local worldFrame = Instance.new("Frame")
+worldFrame.Size = UDim2.new(0.4, 0, 0, 30)
+worldFrame.Position = UDim2.new(0.05, 0, 0.45, 0)
+worldFrame.BackgroundTransparency = 0.7
+worldFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+worldFrame.Parent = mainFrame
+
+local worldLabel = Instance.new("TextLabel")
+worldLabel.Size = UDim2.new(0.5, 0, 1, 0)
+worldLabel.Position = UDim2.new(0, 0, 0, 0)
+worldLabel.Text = "World:"
+worldLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+worldLabel.BackgroundTransparency = 1
+worldLabel.Parent = worldFrame
+
+local worldTextBox = Instance.new("TextBox")
+worldTextBox.Size = UDim2.new(0.5, 0, 1, 0)
+worldTextBox.Position = UDim2.new(0.5, 0, 0, 0)
+worldTextBox.Text = tostring(worldValue)
+worldTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+worldTextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+worldTextBox.Parent = worldFrame
+
+-- Phần Eggs
+local eggsFrame = Instance.new("Frame")
+eggsFrame.Size = UDim2.new(0.4, 0, 0, 30)
+eggsFrame.Position = UDim2.new(0.55, 0, 0.45, 0)
+eggsFrame.BackgroundTransparency = 0.7
+eggsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+eggsFrame.Parent = mainFrame
+
+local eggsLabel = Instance.new("TextLabel")
+eggsLabel.Size = UDim2.new(0.5, 0, 1, 0)
+eggsLabel.Position = UDim2.new(0, 0, 0, 0)
+eggsLabel.Text = "Eggs:"
+eggsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+eggsLabel.BackgroundTransparency = 1
+eggsLabel.Parent = eggsFrame
+
+local eggsTextBox = Instance.new("TextBox")
+eggsTextBox.Size = UDim2.new(0.5, 0, 1, 0)
+eggsTextBox.Position = UDim2.new(0.5, 0, 0, 0)
+eggsTextBox.Text = tostring(eggsValue)
+eggsTextBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+eggsTextBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+eggsTextBox.Parent = eggsFrame
+
+-- Nút Hatch
+local hatchButton = Instance.new("TextButton")
+hatchButton.Size = UDim2.new(0.9, 0, 0, 40)
+hatchButton.Position = UDim2.new(0.05, 0, 0.7, 0)
+hatchButton.Text = "HATCH EGGS"
+hatchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+hatchButton.BackgroundColor3 = Color3.fromRGB(0, 100, 200)
+hatchButton.Parent = mainFrame
+
+
+-- Hàm cập nhật giao diện
+local function updateModeDisplay()
+    if currentMode == 1 then
+        modeButton.Text = "AutoFarm : Off"
+        modeButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+        Tween = false
+    elseif currentMode == 2 then
+        modeButton.Text = "AutoFarm : On"
+        modeButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+        Tween = true
+    end
+end
+
+-- Xử lý sự kiện nút chế độ
+modeButton.MouseButton1Click:Connect(function()
+    currentMode = currentMode == 1 and 2 or 1
+    updateModeDisplay()
+    
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "CHẾ ĐỘ ĐÃ THAY ĐỔI",
+        Text = modeButton.Text,
+        Duration = 3
+    })
+end)
+
+hatchButton.MouseButton1Click:Connect(function()
+
+worldValue = tonumber(worldTextBox.Text) or worldValue
+eggsValue = tonumber(eggsTextBox.Text) or eggsValue
+worldVariable = "World"..worldValue
+if worldValue == 1 then
+eggsVariable = "Egg"..eggsValue
+else
+eggsVariable = "Egg"..(eggsValue + (worldValue - 1)*3)
+end
+warn("Hatching...... : World = "..worldVariable.." Eggs : "..eggsVariable.." or Eggs"..eggsValue)
+
+local args = {workspace:WaitForChild(worldVariable):WaitForChild("Prompts"):WaitForChild("Eggs"):WaitForChild(eggsVariable)}
+game:GetService("ReplicatedStorage"):WaitForChild("PetRemotes"):WaitForChild("HatchServer"):InvokeServer(unpack(args))
+
+
+end)
+
+
+-- Lấy vị trí hiện tại
+local currentPosition = humanoidRootPart.Position
+
+-- Tính vị trí mới
+local newPosition = Vector3.new(
+    currentPosition.X - 100,
+    currentPosition.Y,
+    currentPosition.Z
+)
+
+-- Tạo thông số di chuyển
+local tweenInfo = TweenInfo.new(
+    3, -- Thời gian di chuyển (giây)
+    Enum.EasingStyle.Linear, -- Kiểu easing
+    Enum.EasingDirection.Out -- Hướng easing
+)
+
+-- Tạo và khởi chạy tween
+local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(newPosition)})
+
+local function After()
+
+-- Tạo thông số di chuyển
+local tweenInfo = TweenInfo.new(
+    3, -- Thời gian di chuyển (giây)
+    Enum.EasingStyle.Linear, -- Kiểu easing
+    Enum.EasingDirection.Out -- Hướng easing
+)
+
+-- Tạo NoCollisionConstraint cho tất cả parts
+for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        local constraint = Instance.new("NoCollisionConstraint")
+        constraint.Parent = part
+        part.CanCollide = false
+    end
+end
+
+-- Khiến nhân vật rơi
+rootPart.Velocity = Vector3.new(0, -4000, 0)
+wait(0.1)
+
+for i = 1, 50 do
+wait(0.1) 
+rootPart.Velocity = Vector3.new(0, -200, 0)
+end
+
+for _, part in ipairs(character:GetDescendants()) do
+    if part:IsA("BasePart") then
+        for _, constraint in ipairs(part:GetChildren()) do
+            if constraint:IsA("NoCollisionConstraint") then
+                constraint:Destroy()
+            end
+        end
+        part.CanCollide = true
+    end
+end
+wait(2)
+if currentMode == 2 then 
+tween:Play()
+wait(3)
+After()
+end
+end
+tween:Play()
+wait(3)
+After()
+
+while true do
+	wait(0.0001)
+	humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+	-- Lấy vị trí hiện tại
+	currentPosition = humanoidRootPart.Position
+
+	-- Tính vị trí mới
+	newPosition = Vector3.new(
+	    currentPosition.X - 100,
+	    currentPosition.Y,
+	    currentPosition.Z
+	)
+	rootPart = character:WaitForChild("HumanoidRootPart")
+	tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(newPosition)})
+
+	if currentMode == 1 then  -- Chế độ dừng
+	elseif currentMode == 2 then 
+	if Tween then 
+		tween:Play()
+		wait(3)
+		After()
+		Tween = false
+	end
+	local args = {"hello"}
+	game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("DigEvent"):FireServer(unpack(args))
+	local args = {20,"bye"}
+	game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("GemEvent"):FireServer(unpack(args))
+	end
+end
